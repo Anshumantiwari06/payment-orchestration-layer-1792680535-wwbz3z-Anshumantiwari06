@@ -5,6 +5,8 @@ from sqlalchemy import pool
 from app.core.config import DATABASE_URL
 from alembic import context
 from app.db.base import Base
+from app.models.transaction import Transaction
+from app.models.transaction_state_log import TransactionStateLog
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

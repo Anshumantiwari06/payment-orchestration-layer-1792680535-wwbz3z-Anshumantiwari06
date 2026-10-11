@@ -221,3 +221,33 @@ The initial environment will use:
 Redis or a separate background worker will be introduced only
 if needed to meet the assignment's persistence, retry,
 concurrency, or performance requirements.
+
+## Payment State Machine
+
+A payment state represents its current stage in the payment lifecycle.
+
+The application must allow only explicitly defined state transitions.
+Every successful state transition must be recorded in the transaction
+state log.
+
+Initial states:
+- CREATED
+- ROUTE_SELECTED
+- AUTH_INITIATED
+- AUTHORISED
+- AUTH_FAILED
+- CAPTURE_INITIATED
+- CAPTURED
+- CAPTURE_FAILED
+- FAILED
+
+
+### Gateway Failover and Retry
+
+When authorization fails definitively at a gateway, the transaction may
+return from `AUTH_FAILED` to `ROUTE_SELECTED` so another gateway can be
+selected.
+
+The system must not automatically retry when the gateway outcome is
+unknown. An unknown outcome requires reconciliation or another safe
+way to determine whether the payment was processed before retrying.
