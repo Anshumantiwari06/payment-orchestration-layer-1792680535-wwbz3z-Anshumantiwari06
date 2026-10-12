@@ -4,7 +4,7 @@ from decimal import Decimal
 
 import pytest
 from sqlalchemy import Numeric
-
+from app.models.idempotency_record import IdempotencyRecord
 from app.db.base import Base
 from app.models.transaction import Transaction
 from app.models.transaction_state_log import TransactionStateLog
@@ -105,3 +105,5 @@ def test_confirmed_authorization_failure_can_return_to_routing():
     )
 
     assert result == PaymentState.ROUTE_SELECTED
+def test_idempotency_record_is_registered_in_metadata():
+    assert "idempotency_records" in Base.metadata.tables

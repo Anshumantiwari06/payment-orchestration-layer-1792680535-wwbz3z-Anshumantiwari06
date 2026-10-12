@@ -19,7 +19,7 @@ from app.gateways.orchestrator import PaymentOrchestrator
 from app.gateways.router import GatewayRouter
 from app.gateways.schemas import GatewayOutcome
 from uuid import UUID
-
+from app.services.idempotency_service import IdempotencyConflictError
 
 app = FastAPI(
     title="Payment Orchestration Layer",
@@ -151,7 +151,11 @@ def authorize_payment(
             status_code=400,
             detail=str(exc),
         ) from exc
-
+    except IdempotencyConflictError as exc:
+        raise HTTPException(
+            status_code=409,
+            detail=str(exc),
+        ) from exc
     return {
         "transaction_id": str(transaction.id),
         "status": transaction.status,
