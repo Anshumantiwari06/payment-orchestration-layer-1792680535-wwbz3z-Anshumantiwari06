@@ -30,17 +30,23 @@ app = FastAPI(
     version="0.1.0",
 )
 
+
+
 router = GatewayRouter(
     gateways=[
-        MockGateway(
-            gateway_name="mock_primary",
-            outcome=GatewayOutcome.DECLINED,
-        ),
-        MockGateway(
-            gateway_name="mock_secondary",
-            outcome=GatewayOutcome.AUTHORISED,
-        ),
-    ]
+        MockGateway("razorpay_mock", GatewayOutcome.AUTHORISED),
+        MockGateway("stripe_mock", GatewayOutcome.AUTHORISED),
+        MockGateway("payu_mock", GatewayOutcome.AUTHORISED),
+        MockGateway("upi_mock", GatewayOutcome.AUTHORISED),
+        MockGateway("fallback_mock", GatewayOutcome.AUTHORISED),
+    ],
+    weights={
+        "razorpay_mock": 35,
+        "stripe_mock": 20,
+        "payu_mock": 20,
+        "upi_mock": 15,
+        "fallback_mock": 10,
+    },
 )
 
 orchestrator = PaymentOrchestrator(router)
