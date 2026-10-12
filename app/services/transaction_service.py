@@ -2,13 +2,14 @@
 from uuid import UUID
 
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.schemas.transaction import TransactionCreateRequest
 from app.models.transaction import Transaction
 from app.models.idempotency_record import IdempotencyRecord
 from app.state_machine.engine import transition_transaction
-from app.state_machine.states import PaymentState, InvalidTransitionError
+from app.state_machine.states import PaymentState
 from app.gateways.orchestrator import PaymentOrchestrator
 from app.gateways.schemas import GatewayOutcome
 from app.services.idempotency_service import (
@@ -147,10 +148,33 @@ def authorize_transaction(
         status="IN_PROGRESS",
     )
 
+    # Reserve the idempotency key before processing the payment.
     try:
         db.add(record)
         db.flush()
+        db.commit()
+    except IntegrityError as exc:
+        db.rollback()
 
+        existing_record = get_idempotency_record(
+            db,
+            transaction.merchant_id,
+            idempotency_key,
+        )
+
+        if existing_record is not None:
+            validate_existing_request(existing_record, request_hash)
+            raise IdempotencyConflictError(
+                "This payment request is already being processed"
+            ) from exc
+
+        raise
+
+    except Exception:
+        db.rollback()
+        raise
+
+    try:
         route_log = transition_transaction(
             transaction,
             PaymentState.ROUTE_SELECTED,
@@ -208,6 +232,21 @@ def authorize_transaction(
 
     except Exception:
         db.rollback()
+
+        # Preserve the durable reservation. Do not allow an automatic
+        # retry to start another gateway authorization after an error.
+        try:
+            existing_record = get_idempotency_record(
+                db,
+                transaction.merchant_id,
+                idempotency_key,
+            )
+            if existing_record is not None:
+                existing_record.status = "UNKNOWN"
+                db.commit()
+        except Exception:
+            db.rollback()
+
         raise
 
     return transaction
