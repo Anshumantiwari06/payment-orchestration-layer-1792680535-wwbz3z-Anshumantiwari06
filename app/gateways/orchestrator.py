@@ -1,4 +1,3 @@
-
 from decimal import Decimal
 
 from app.gateways.router import GatewayRouter
@@ -8,6 +7,7 @@ from app.gateways.schemas import GatewayOutcome, GatewayResult
 class PaymentOrchestrator:
     def __init__(self, router: GatewayRouter):
         self.router = router
+        self.last_attempted_gateways: list[str] = []
 
     def authorize(
         self,
@@ -17,6 +17,7 @@ class PaymentOrchestrator:
     ) -> GatewayResult:
         excluded_gateways: set[str] = set()
         last_result: GatewayResult | None = None
+        self.last_attempted_gateways = []
 
         while True:
             try:
@@ -29,6 +30,7 @@ class PaymentOrchestrator:
                 raise
 
             excluded_gateways.add(gateway.name)
+            self.last_attempted_gateways.append(gateway.name)
 
             try:
                 result = gateway.authorize(
