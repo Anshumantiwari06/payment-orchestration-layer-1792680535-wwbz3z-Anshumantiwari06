@@ -3,19 +3,22 @@ from uuid import UUID
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
+
 from app.schemas.transaction import TransactionCreateRequest
 from app.models.transaction import Transaction
+from app.models.idempotency_record import IdempotencyRecord
 from app.state_machine.engine import transition_transaction
-from app.state_machine.states import PaymentState
+from app.state_machine.states import PaymentState, InvalidTransitionError
 from app.gateways.orchestrator import PaymentOrchestrator
 from app.gateways.schemas import GatewayOutcome
-from app.models.idempotency_record import IdempotencyRecord
 from app.services.idempotency_service import (
     IdempotencyConflictError,
     calculate_request_hash,
     get_idempotency_record,
     validate_existing_request,
 )
+
+
 def change_transaction_state(
     db: Session,
     transaction_id: UUID,
@@ -50,6 +53,7 @@ def change_transaction_state(
 
     return transaction
 
+
 def create_transaction(
     db: Session,
     request: TransactionCreateRequest,
@@ -74,19 +78,21 @@ def create_transaction(
     return transaction
 
 
-
 def authorize_transaction(
     db: Session,
     transaction_id: UUID,
     orchestrator: PaymentOrchestrator,
     idempotency_key: str,
     correlation_id: str | None = None,
-) -> Transaction:
+) -> Transaction | dict:
     transaction = db.scalar(
         select(Transaction).where(Transaction.id == transaction_id)
     )
+
     if transaction is None:
-        raise ValueError(f"Transaction {transaction_id} was not found")
+        raise ValueError(
+            f"Transaction {transaction_id} was not found"
+        )
 
     request_hash = calculate_request_hash(
         merchant_id=transaction.merchant_id,
@@ -105,7 +111,19 @@ def authorize_transaction(
         validate_existing_request(record, request_hash)
 
         if record.status == "COMPLETED":
-            return transaction
+            response_data = record.response_data
+
+            if response_data is None:
+                raise IdempotencyConflictError(
+                    "Completed idempotency record has no stored response"
+                )
+
+            return {
+                "transaction_id": response_data["transaction_id"],
+                "status": response_data["status"],
+                "selected_gateway": response_data["selected_gateway"],
+                "gateway_reference": response_data["gateway_reference"],
+            }
 
         if record.status == "IN_PROGRESS":
             raise IdempotencyConflictError(

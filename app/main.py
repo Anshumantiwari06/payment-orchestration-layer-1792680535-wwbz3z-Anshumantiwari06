@@ -162,6 +162,9 @@ def authorize_payment(
             status_code=409,
             detail=str(exc),
         ) from exc
+    if isinstance(transaction, dict):
+        return transaction
+
     return {
         "transaction_id": str(transaction.id),
         "status": transaction.status,
