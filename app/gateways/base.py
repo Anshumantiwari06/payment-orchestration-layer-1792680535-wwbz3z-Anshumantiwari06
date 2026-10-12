@@ -19,5 +19,37 @@ class PaymentGateway(ABC):
         currency: str,
         idempotency_key: str,
     ) -> GatewayResult:
-        """Authorize a payment and return a normalized result."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def capture(
+        self,
+        gateway_reference: str,
+        amount: Decimal,
+        idempotency_key: str,
+    ) -> GatewayResult:
+        raise NotImplementedError
+
+    @abstractmethod
+    def void(
+        self,
+        gateway_reference: str,
+        idempotency_key: str,
+    ) -> GatewayResult:
+        raise NotImplementedError
+
+    @abstractmethod
+    def refund(
+        self,
+        gateway_reference: str,
+        amount: Decimal,
+        idempotency_key: str,
+    ) -> GatewayResult:
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_status(
+        self,
+        gateway_reference: str,
+    ) -> GatewayResult:
         raise NotImplementedError
