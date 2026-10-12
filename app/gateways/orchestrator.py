@@ -26,7 +26,6 @@ class PaymentOrchestrator:
             except RuntimeError:
                 if last_result is not None:
                     return last_result
-
                 raise
 
             excluded_gateways.add(gateway.name)
@@ -41,7 +40,7 @@ class PaymentOrchestrator:
                 return GatewayResult(
                     outcome=GatewayOutcome.UNKNOWN,
                     gateway_name=gateway.name,
-                    message=f"Gateway call failed: {exc}",
+                    message=f"Gateway call failed: {type(exc).__name__}",
                 )
 
             last_result = result
@@ -52,5 +51,4 @@ class PaymentOrchestrator:
             }:
                 return result
 
-            # A definitive decline allows trying another gateway.
-
+            # A definitive decline permits trying another gateway.
