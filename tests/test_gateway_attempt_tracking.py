@@ -16,7 +16,7 @@ def test_attempted_gateways_are_recorded_in_order():
     )
 
     # Force deterministic gateway selection.
-    router.select_gateway = lambda excluded_gateways=None: (
+    router.select_gateway = lambda excluded_gateways=None, payment_method="card": (
         primary if "primary" not in (excluded_gateways or set()) else secondary
     )
 

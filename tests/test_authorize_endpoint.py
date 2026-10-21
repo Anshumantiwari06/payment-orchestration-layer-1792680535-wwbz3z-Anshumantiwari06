@@ -47,7 +47,7 @@ def test_completed_idempotency_replay_returns_stored_response():
         with patch(
             "app.services.transaction_service.get_idempotency_record",
             return_value=record,
-        ), patch("app.main.orchestrator") as orchestrator:
+        ), patch("app.main.ORCHESTRATOR") as orchestrator:
             client = TestClient(app)
 
             response = client.post(

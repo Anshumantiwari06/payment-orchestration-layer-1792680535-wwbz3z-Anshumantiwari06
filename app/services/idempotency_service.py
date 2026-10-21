@@ -18,12 +18,14 @@ def calculate_request_hash(
     transaction_id: str,
     amount: Decimal,
     currency: str,
+    payment_method: str = "card",
 ) -> str:
     payload = {
         "merchant_id": merchant_id,
         "transaction_id": transaction_id,
         "amount": str(amount),
         "currency": currency.upper(),
+        "payment_method": payment_method.lower(),
     }
 
     canonical_payload = json.dumps(

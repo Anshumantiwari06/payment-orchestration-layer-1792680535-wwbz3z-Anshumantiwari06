@@ -1,0 +1,29 @@
+# Payment state machine
+
+```mermaid
+stateDiagram-v2
+  [*] --> CREATED
+  CREATED --> ROUTE_SELECTED
+  ROUTE_SELECTED --> AUTH_INITIATED
+  AUTH_INITIATED --> AUTHORISED
+  AUTH_INITIATED --> AUTH_FAILED
+  AUTH_INITIATED --> AUTH_UNKNOWN
+  AUTH_UNKNOWN --> AUTHORISED
+  AUTH_UNKNOWN --> AUTH_FAILED
+  AUTHORISED --> CAPTURE_INITIATED
+  CAPTURE_INITIATED --> CAPTURED
+  CAPTURE_INITIATED --> PARTIALLY_CAPTURED
+  CAPTURE_INITIATED --> CAPTURE_FAILED
+  AUTHORISED --> VOID_INITIATED
+  VOID_INITIATED --> VOIDED
+  CAPTURED --> SETTLED
+  CAPTURED --> REFUND_INITIATED
+  SETTLED --> REFUND_INITIATED
+  REFUND_INITIATED --> REFUNDED
+  REFUND_INITIATED --> PARTIALLY_REFUNDED
+  REFUND_INITIATED --> REFUND_FAILED
+  CAPTURED --> RECONCILIATION_MISMATCH
+  SETTLED --> RECONCILIATION_MISMATCH
+```
+
+Transitions are enforced by `app/state_machine/transitions.py`; each accepted transition adds a `TransactionStateLog`. State values are persisted as strings for schema portability. This is a mock-gateway training implementation, not a PCI-certified payment platform.

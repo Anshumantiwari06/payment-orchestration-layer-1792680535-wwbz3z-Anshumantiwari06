@@ -7,6 +7,9 @@ from alembic import context
 from app.db.base import Base
 from app.models.transaction import Transaction
 from app.models.transaction_state_log import TransactionStateLog
+from app.models.webhook_event import WebhookEvent
+from app.models.reconciliation_anomaly import ReconciliationAnomaly
+from app.models.reconciliation_run import ReconciliationRun
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

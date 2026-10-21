@@ -2,6 +2,7 @@
 import uuid
 from datetime import datetime
 from decimal import Decimal
+
 from sqlalchemy import DateTime, Integer, Numeric, String, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
@@ -58,6 +59,14 @@ class Transaction(Base):
         nullable=True,
     )
 
+    captured_amount: Mapped[Decimal] = mapped_column(
+        Numeric(15, 2), nullable=False, default=Decimal("0.00")
+    )
+
+    refunded_amount: Mapped[Decimal] = mapped_column(
+        Numeric(15, 2), nullable=False, default=Decimal("0.00")
+    )
+
     version: Mapped[int] = mapped_column(
         Integer,
         nullable=False,
@@ -76,3 +85,7 @@ class Transaction(Base):
         server_default=func.now(),
         onupdate=func.now(),
     )
+
+    __mapper_args__ = {
+        "version_id_col": version,
+    }

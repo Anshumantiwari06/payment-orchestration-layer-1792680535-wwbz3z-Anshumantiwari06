@@ -1,0 +1,97 @@
+openapi: 3.0.3
+info:
+  title: Payment Orchestration Layer API
+  version: 2.0.0
+  description: Mock-gateway educational API. Does not process real payments.
+servers:
+  - url: http://localhost:8000
+paths:
+  /api/v1/payments:
+    post:
+      summary: Create payment intent
+      responses:
+        '201': {description: Payment created}
+        '400': {description: Invalid request}
+    get:
+      summary: Find payment by merchant order ID and merchant ID
+      parameters:
+        - {name: merchant_order_id, in: query, required: true, schema: {type: string}}
+        - {name: merchant_id, in: query, required: true, schema: {type: string}}
+      responses:
+        '200': {description: Payment found}
+        '404': {description: Payment not found}
+  /api/v1/payments/{transaction_id}:
+    get:
+      summary: Retrieve payment
+      parameters:
+        - {name: transaction_id, in: path, required: true, schema: {type: string, format: uuid}}
+      responses:
+        '200': {description: Payment}
+        '404': {description: Not found}
+  /api/v1/payments/{transaction_id}/authorize:
+    post:
+      summary: Authorize payment using Idempotency-Key header
+      parameters:
+        - {name: transaction_id, in: path, required: true, schema: {type: string, format: uuid}}
+        - {name: Idempotency-Key, in: header, required: true, schema: {type: string}}
+      responses:
+        '200': {description: Authorization result}
+        '409': {description: Conflict or uncertain outcome}
+  /api/v1/payments/{transaction_id}/capture:
+    post: {summary: Capture an authorized payment, responses: {'200': {description: Capture result}}}
+  /api/v1/payments/{transaction_id}/void:
+    post: {summary: Void an authorization, responses: {'200': {description: Void result}}}
+  /api/v1/payments/{transaction_id}/refund:
+    post: {summary: Refund captured payment, responses: {'200': {description: Refund result}}}
+  /api/v1/payments/{transaction_id}/refunds:
+    get: {summary: List refund-related timeline entries, responses: {'200': {description: Refund entries}}}
+  /api/v1/payments/{transaction_id}/timeline:
+    get: {summary: Get state transition history, responses: {'200': {description: Timeline}}}
+  /api/v1/webhooks/{gateway_name}:
+    post: {summary: Receive HMAC-SHA256 signed mock webhook, responses: {'200': {description: Accepted or duplicate}, '401': {description: Invalid signature}}}
+  /api/v1/gateways:
+    get: {summary: List mock gateways, responses: {'200': {description: Gateway list}}}
+  /api/v1/gateways/{name}/health:
+    get: {summary: Gateway circuit status, responses: {'200': {description: Gateway health}}}
+  /api/v1/gateways/{name}/metrics:
+    get: {summary: Gateway call counters, responses: {'200': {description: Gateway metrics}}}
+  /api/v1/gateways/{name}/config:
+    put: {summary: Update enabled status and weight, responses: {'200': {description: Updated configuration}}}
+  /api/v1/routing/config:
+    get: {summary: Read routing configuration, responses: {'200': {description: Routing config}}}
+    put: {summary: Update gateway weights, responses: {'200': {description: Updated weights}}}
+  /api/v1/reconciliation/trigger:
+    post: {summary: Run reconciliation scan, responses: {'200': {description: Reconciliation summary}}}
+  /api/v1/reconciliation/reports/{run_id}:
+    get: {summary: Get anomaly report by anomaly UUID, responses: {'200': {description: Anomaly report}}}
+  /api/v1/analytics/success-rate:
+    get: {summary: Gateway success-rate analytics, responses: {'200': {description: Analytics}}}
+  /api/v1/analytics/volume:
+    get: {summary: Transaction volume analytics, responses: {'200': {description: Volume}}}
+  /api/v1/health:
+    get: {summary: Health check, responses: {'200': {description: Healthy}, '503': {description: Database unavailable}}}
+
+  /api/v1/routing/scores:
+    get:
+      summary: Show five-factor gateway scores for a payment method
+      parameters:
+        - {name: payment_method, in: query, required: false, schema: {type: string, default: card}}
+      responses:
+        '200': {description: Score breakdown and selection policy}
+  /api/v1/webhooks/events/{event_id}/retry:
+    post:
+      summary: Retry a persisted failed webhook event
+      parameters:
+        - {name: event_id, in: path, required: true, schema: {type: string}}
+      responses:
+        '200': {description: Retry result}
+        '409': {description: Event is not retryable or transition failed}
+  /api/v1/gateways/{name}/scenarios/{scenario}:
+    post:
+      summary: Inject a one-shot mock gateway scenario for local testing
+      parameters:
+        - {name: name, in: path, required: true, schema: {type: string}}
+        - {name: scenario, in: path, required: true, schema: {type: string}}
+      responses:
+        '200': {description: Scenario configured}
+        '400': {description: Unsupported scenario}
