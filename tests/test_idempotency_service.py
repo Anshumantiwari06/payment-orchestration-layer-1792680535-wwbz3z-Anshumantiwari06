@@ -132,3 +132,61 @@ def test_in_progress_record_rejects_reused_key():
         db.commit.assert_not_called()
     finally:
         transaction_service.get_idempotency_record = original_get_record
+
+def test_completed_record_returns_stored_response_without_gateway_call():
+    from unittest.mock import Mock
+
+    from app.services.transaction_service import authorize_transaction
+
+    transaction_id = uuid4()
+    request_hash = calculate_request_hash(
+        "merchant_001",
+        str(transaction_id),
+        Decimal("1250.50"),
+        "INR",
+    )
+
+    stored_response = {
+        "transaction_id": str(transaction_id),
+        "status": "AUTHORISED",
+        "selected_gateway": "stripe_mock",
+        "gateway_reference": "stripe-ref-001",
+    }
+
+    record = IdempotencyRecord(
+        merchant_id="merchant_001",
+        idempotency_key="order_003",
+        request_hash=request_hash,
+        status="COMPLETED",
+        response_data=stored_response,
+    )
+
+    db = Mock()
+    transaction = Mock()
+    transaction.id = transaction_id
+    transaction.merchant_id = "merchant_001"
+    transaction.amount = Decimal("1250.50")
+    transaction.currency = "INR"
+    db.scalar.return_value = transaction
+
+    orchestrator = Mock()
+
+    from app.services import transaction_service
+
+    original_get_record = transaction_service.get_idempotency_record
+    transaction_service.get_idempotency_record = Mock(return_value=record)
+
+    try:
+        result = authorize_transaction(
+            db=db,
+            transaction_id=transaction_id,
+            orchestrator=orchestrator,
+            idempotency_key="order_003",
+        )
+
+        assert result == stored_response
+        orchestrator.authorize.assert_not_called()
+        db.add.assert_not_called()
+        db.commit.assert_not_called()
+    finally:
+        transaction_service.get_idempotency_record = original_get_record
