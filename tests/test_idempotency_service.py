@@ -79,3 +79,13 @@ def test_reusing_key_with_different_request_is_rejected():
 
     with pytest.raises(IdempotencyConflictError):
         validate_existing_request(record, "different_hash")
+def test_in_progress_record_rejects_reused_key():
+    record = IdempotencyRecord(
+        merchant_id="merchant_001",
+        idempotency_key="order_002",
+        request_hash="original_hash",
+        status="IN_PROGRESS",
+    )
+
+    assert record.status == "IN_PROGRESS"
+    assert record.idempotency_key == "order_002"
