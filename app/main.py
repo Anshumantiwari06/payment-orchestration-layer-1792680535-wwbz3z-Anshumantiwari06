@@ -750,7 +750,10 @@ def routing_scores(
 def set_routing_config(weights: dict[str, int]):
     if (
         set(weights) != set(ROUTER.weights)
-        or any(not isinstance(v, int) or v < 0 for v in weights.values())
+        or any(
+            not isinstance(v, int) or isinstance(v, bool) or v < 0
+            for v in weights.values()
+        )
         or sum(weights.values()) == 0
     ):
         raise HTTPException(
