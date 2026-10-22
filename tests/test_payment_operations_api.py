@@ -1,15 +1,16 @@
-
+﻿from decimal import Decimal
 from unittest.mock import Mock, patch
 from uuid import uuid4
-from decimal import Decimal
 from fastapi.testclient import TestClient
 from app.db.session import get_db
-from app.main import app
-from app.models import ReconciliationRun, ReconciliationAnomaly
-from decimal import Decimal
 from app.gateways.schemas import GatewayOutcome
+from app.main import app
 from app.models.reconciliation_anomaly import ReconciliationAnomaly
 from app.models.transaction_state_log import TransactionStateLog
+from app.main import GATEWAYS, ROUTER
+import pytest
+from fastapi import HTTPException
+from app import main
 
 def test_capture_missing_payment_returns_404():
     db = Mock()
@@ -101,12 +102,11 @@ def test_capture_in_invalid_state_returns_409():
     app.dependency_overrides[get_db] = lambda: db
 
     try:
-        with patch("app.main.GATEWAYS", [gateway]):
-            with TestClient(app) as client:
-                response = client.post(
-                    f"/api/v1/payments/{uuid4()}/capture",
-                    json={"amount": "100.00"},
-                )
+        with patch("app.main.GATEWAYS", [gateway]), TestClient(app) as client:
+            response = client.post(
+                f"/api/v1/payments/{uuid4()}/capture",
+                json={"amount": "100.00"},
+            )
 
         assert response.status_code == 409
         assert "Cannot capture payment in state CREATED" in (
@@ -132,12 +132,11 @@ def test_capture_exceeding_remaining_amount_returns_409():
     app.dependency_overrides[get_db] = lambda: db
 
     try:
-        with patch("app.main.GATEWAYS", [gateway]):
-            with TestClient(app) as client:
-                response = client.post(
-                    f"/api/v1/payments/{uuid4()}/capture",
-                    json={"amount": "200.00"},
-                )
+        with patch("app.main.GATEWAYS", [gateway]), TestClient(app) as client:
+            response = client.post(
+                f"/api/v1/payments/{uuid4()}/capture",
+                json={"amount": "200.00"},
+            )
 
         assert response.status_code == 409
         assert "remaining authorized amount" in response.json()["detail"]
@@ -163,12 +162,11 @@ def test_capture_zero_amount_returns_409():
     app.dependency_overrides[get_db] = lambda: db
 
     try:
-        with patch("app.main.GATEWAYS", [gateway]):
-            with TestClient(app) as client:
-                response = client.post(
-                    f"/api/v1/payments/{uuid4()}/capture",
-                    json={"amount": "0.00"},
-                )
+        with patch("app.main.GATEWAYS", [gateway]), TestClient(app) as client:
+            response = client.post(
+                f"/api/v1/payments/{uuid4()}/capture",
+                json={"amount": "0.00"},
+            )
 
         assert response.status_code == 422
        
@@ -208,7 +206,7 @@ def test_list_refunds_missing_payment_returns_404():
         app.dependency_overrides.clear()
         
 
-from app.main import GATEWAYS, ROUTER
+
 
 
 def test_list_gateways_returns_configured_gateways():
@@ -345,8 +343,6 @@ def test_reconciliation_report_returns_existing_run():
     assert data["checked_count"] == 3
     assert data["anomalies"] == []
 
-from app.models.transaction import Transaction
-from app.main import GATEWAYS
 
 
 def test_reconciliation_trigger_with_no_transactions():
@@ -605,7 +601,6 @@ def test_refund_successfully_refunds_payment():
     db.refresh.assert_called_once_with(transaction)
 
 def test_create_payment_database_error_returns_500():
-    from app.schemas.transaction import TransactionCreateRequest
 
     db = Mock()
     app.dependency_overrides[get_db] = lambda: db
@@ -616,17 +611,16 @@ def test_create_payment_database_error_returns_500():
             side_effect=__import__(
                 "sqlalchemy.exc", fromlist=["SQLAlchemyError"]
             ).SQLAlchemyError("database unavailable"),
-        ):
-            with TestClient(app) as client:
-                response = client.post(
-                    "/api/v1/payments",
-                    json={
-                        "merchant_id": "merchant_test",
-                        "merchant_order_id": "order_db_error",
-                        "amount": "100.00",
-                        "currency": "INR",
-                    },
-                )
+        ), TestClient(app) as client:
+            response = client.post(
+                "/api/v1/payments",
+                json={
+                    "merchant_id": "merchant_test",
+                    "merchant_order_id": "order_db_error",
+                    "amount": "100.00",
+                    "currency": "INR",
+                },
+            )
 
         assert response.status_code == 500
         assert response.json()["detail"] == (
@@ -644,17 +638,16 @@ def test_create_payment_invalid_request_returns_400():
         with patch(
             "app.main.create_transaction",
             side_effect=ValueError("Invalid transaction data"),
-        ):
-            with TestClient(app) as client:
-                response = client.post(
-                    "/api/v1/payments",
-                    json={
-                        "merchant_id": "merchant_test",
-                        "merchant_order_id": "order_invalid",
-                        "amount": "100.00",
-                        "currency": "INR",
-                    },
-                )
+        ), TestClient(app) as client:
+            response = client.post(
+                "/api/v1/payments",
+                json={
+                    "merchant_id": "merchant_test",
+                    "merchant_order_id": "order_invalid",
+                    "amount": "100.00",
+                    "currency": "INR",
+                },
+            )
 
         assert response.status_code == 400
         assert response.json()["detail"] == "Invalid transaction data"
@@ -789,12 +782,8 @@ def test_get_payment_invalid_uuid_returns_422():
     finally:
         app.dependency_overrides.clear()
 
-from unittest.mock import Mock
 
-import pytest
-from fastapi import HTTPException
 
-from app import main
 
 
 def test_root_returns_service_information():
@@ -881,7 +870,7 @@ def test_gateway_config_prevents_disabling_last_weighted_gateway(monkeypatch):
         {"razorpay": True, "stripe": 1, "payu": 1, "upi": 1},
     ],
 )
-def test_routing_config_rejects_invalid_weights(weights):
+def test_routing_config_service_rejects_invalid_weights(weights):
     with pytest.raises(HTTPException) as exc:
         main.set_routing_config(weights)
 
@@ -918,3 +907,4 @@ def test_webhook_event_endpoint_returns_404_when_missing():
         main.get_webhook_event("missing-event", db)
 
     assert exc.value.status_code == 404
+

@@ -1,7 +1,9 @@
 """Deterministic mock adapters; no real gateway credentials or network calls."""
 from decimal import Decimal
+
 from app.gateways.mock_gateway import MockGateway
 from app.gateways.schemas import GatewayOutcome, GatewayResult
+
 
 class ScenarioMockGateway(MockGateway):
     def __init__(self, gateway_name: str, outcome: GatewayOutcome = GatewayOutcome.AUTHORISED):
@@ -17,7 +19,8 @@ class ScenarioMockGateway(MockGateway):
         allowed = {None, "success", "timeout", "server-error", "decline", "rate-limit", "unknown", "partial",
                    "connection-reset", "gateway-down", "authentication-error", "insufficient-funds",
                    "invalid-response", "provider-5xx", "duplicate-response", "stale-status"}
-        if scenario not in allowed: raise ValueError(f"Unsupported mock scenario: {scenario}")
+        if scenario not in allowed:
+            raise ValueError(f"Unsupported mock scenario: {scenario}")
         self.next_scenario = scenario
 
     def _scenario_result(self, operation: str, reference: str | None = None):
