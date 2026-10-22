@@ -1,4 +1,4 @@
-﻿# Payment Orchestration Layer with Multi-Gateway Failover
+# Payment Orchestration Layer with Multi-Gateway Failover
 
 Educational backend project using FastAPI, SQLAlchemy, PostgreSQL, Alembic and simulated gateways. **No real payment gateway requests are made.** This is not production-ready or PCI-certified.
 
@@ -26,7 +26,7 @@ Educational backend project using FastAPI, SQLAlchemy, PostgreSQL, Alembic and s
    pytest -q --cov=app --cov-report=term-missing
    ```
 
-   Latest verified full test run: 241 tests passed. Whole-application coverage was 84% (measured across app/).
+   Latest verified full test run: 242 tests passed. Whole-application coverage was 84% (measured across app/).
 
 ## Docker
 
@@ -59,4 +59,3 @@ The mock implementation persists `captured_amount` and `refunded_amount`, reject
 ### Webhook observability
 
 Webhook events are signature-checked, deduplicated by `(gateway, event_id)`, and retained with processing status, attempt count, last-attempt timestamp, and error text. Failed events can be retried explicitly through `POST /api/v1/webhooks/events/{event_id}/retry`; the Docker Compose worker polls persisted failed/rejected events with a bounded attempt count. Configure the worker interval/batch size with `WEBHOOK_RETRY_INTERVAL_SECONDS` and `WEBHOOK_RETRY_BATCH_SIZE`.
-

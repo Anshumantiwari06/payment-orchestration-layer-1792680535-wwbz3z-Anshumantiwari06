@@ -39,3 +39,9 @@
 - Five-minute payment benchmark: 30,000 requests, 99.98 requests/second, zero errors, P95 latency 81.9 ms.
 - Added architecture and routing-algorithm documentation and committed benchmark reports.
 - The benchmark does not establish that every performance target or all 15 failure scenarios have passed.
+
+### Reconciliation benchmark — 2026-10-22
+
+- Processed 10,000 seeded synthetic transactions through the reconciliation trigger endpoint in 0.77 seconds (HTTP 202).
+- The benchmark completed with zero anomalies and zero errors; synthetic transactions were cleaned up afterward.
+- This measures the local mock-gateway reconciliation path, not real payment-provider performance.
