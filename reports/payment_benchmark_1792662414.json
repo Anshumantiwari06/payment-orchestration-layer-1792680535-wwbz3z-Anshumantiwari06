@@ -1,0 +1,20 @@
+{
+  "started_at_utc": "2026-10-22T09:46:54.292406+00:00",
+  "base_url": "http://localhost:8000",
+  "duration_seconds": 10.008,
+  "target_requests_per_second": 5.0,
+  "completed_requests": 50,
+  "successful_responses": 50,
+  "http_status_counts": {
+    "201": 50
+  },
+  "error_count": 0,
+  "actual_requests_per_second": 5.0,
+  "latency_ms": {
+    "p50": 73.45,
+    "p95": 152.99,
+    "p99": 246.85,
+    "max": 246.85
+  },
+  "sample_errors": []
+}

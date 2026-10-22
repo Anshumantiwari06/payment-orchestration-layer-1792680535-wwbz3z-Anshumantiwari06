@@ -1,0 +1,28 @@
+{
+  "started_at_utc": "2026-10-22T10:12:27.052609+00:00",
+  "base_url": "http://localhost:8000",
+  "target_requests_per_second": 50.0,
+  "measurement_window_seconds": 30,
+  "total_elapsed_seconds": 30.045,
+  "scheduled_requests": 1500,
+  "requests_started": 1500,
+  "requests_started_within_window": 1500,
+  "completed_requests": 1500,
+  "completed_within_window": 1498,
+  "completed_after_window": 2,
+  "successful_responses": 1500,
+  "http_status_counts": {
+    "201": 1500
+  },
+  "error_count": 0,
+  "scheduled_requests_per_second": 50.0,
+  "actual_requests_per_second": 49.93,
+  "overall_completion_requests_per_second": 49.93,
+  "latency_ms": {
+    "p50": 51.56,
+    "p95": 55.96,
+    "p99": 138.31,
+    "max": 199.1
+  },
+  "sample_errors": []
+}
