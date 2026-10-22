@@ -1,4 +1,4 @@
-# Payment Orchestration Layer with Multi-Gateway Failover
+﻿# Payment Orchestration Layer with Multi-Gateway Failover
 
 Educational backend project using FastAPI, SQLAlchemy, PostgreSQL, Alembic and simulated gateways. **No real payment gateway requests are made.** This is not production-ready or PCI-certified.
 
@@ -26,7 +26,7 @@ Educational backend project using FastAPI, SQLAlchemy, PostgreSQL, Alembic and s
    pytest -q --cov=app --cov-report=term-missing
    ```
 
-   The current isolated unit-test run reports 83% coverage across the gateway and state-machine modules only. This is not a whole-application coverage figure.
+   Latest verified full test run: 241 tests passed. Whole-application coverage was 84% (measured across app/).
 
 ## Docker
 
@@ -49,7 +49,7 @@ Webhook signatures use HMAC-SHA256 over the exact raw request body and a gateway
 
 ## Limitations to understand
 
-Routing now computes a five-factor score (success rate 35%, P95-latency estimate 20%, cost 20%, circuit health 15%, payment-method compatibility 10%) and uses the score with configured gateway weights. The bundled adapters are still deterministic mocks: success/latency metrics are runtime EWMA estimates and cost is a configurable demo baseline, not live provider telemetry. Reconciliation runs and anomalies are persisted, but this is an on-demand mock-status scan, not settlement-report ingestion. A bounded webhook retry worker is included and runs in Docker Compose; retries are at-least-once and require idempotent event application. Performance targets and all 15 failure scenarios must still be demonstrated with a real PostgreSQL run and load tests. Review `docs/routing-algorithm.md`, `docs/state-machine.md`, and `docs/api-specification.yaml` before making production-readiness claims.
+Routing now computes a five-factor score (success rate 35%, P95-latency estimate 20%, cost 20%, circuit health 15%, payment-method compatibility 10%) and uses the score with configured gateway weights. The bundled adapters are still deterministic mocks: success/latency metrics are runtime EWMA estimates and cost is a configurable demo baseline, not live provider telemetry. Reconciliation runs and anomalies are persisted, but this is an on-demand mock-status scan, not settlement-report ingestion. A bounded webhook retry worker is included and runs in Docker Compose; retries are at-least-once and require idempotent event application. A five-minute benchmark against the local Docker deployment completed 30,000 requests at 99.98 requests/second, with zero errors and 81.9 ms P95 latency. These results demonstrate payment-initiation performance for that run only; webhook latency, idempotency latency, gateway failover, reconciliation throughput, and all 15 failure scenarios still need their own verified measurements. Review `docs/routing-algorithm.md`, `docs/state-machine.md`, and `docs/api-specification.yaml` before making production-readiness claims.
 
 
 ### Financial-operation safety
@@ -59,3 +59,4 @@ The mock implementation persists `captured_amount` and `refunded_amount`, reject
 ### Webhook observability
 
 Webhook events are signature-checked, deduplicated by `(gateway, event_id)`, and retained with processing status, attempt count, last-attempt timestamp, and error text. Failed events can be retried explicitly through `POST /api/v1/webhooks/events/{event_id}/retry`; the Docker Compose worker polls persisted failed/rejected events with a bounded attempt count. Configure the worker interval/batch size with `WEBHOOK_RETRY_INTERVAL_SECONDS` and `WEBHOOK_RETRY_BATCH_SIZE`.
+

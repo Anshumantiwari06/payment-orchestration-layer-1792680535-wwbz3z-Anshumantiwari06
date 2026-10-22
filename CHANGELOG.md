@@ -1,6 +1,6 @@
-# Changelog
+﻿# Changelog
 
-## Unreleased — assignment completion pass
+## Unreleased â€” assignment completion pass
 
 - Expanded the payment state enum and valid transition graph.
 - Added four named simulated gateway adapters and scenario controls.
@@ -20,7 +20,7 @@
 - No load benchmark or all-15-scenario pass claim is made.
 
 
-## Completion pass — 2026-10-21
+## Completion pass â€” 2026-10-21
 
 - Implemented weighted five-factor gateway scoring and runtime EWMA success/latency observations, plus payment-method compatibility filtering.
 - Added 15 deterministic mock failure scenarios and table-driven scenario tests.
@@ -29,3 +29,13 @@
 - Added a PostgreSQL trigger preventing UPDATE/DELETE on the transaction state audit log.
 - Included valid/invalid state-transition coverage tests and expanded project documentation.
 - Validation in the current environment: Python compilation and 110 unit tests pass; the gateway/state-machine-focused test subset reports 83% coverage. Full API/database integration tests and live PostgreSQL migration execution remain unverified here because the `psycopg` driver is unavailable in this environment.
+
+## Final verification — 2026-10-22
+
+- Full test suite: 241 tests passed.
+- Whole-application test coverage: 84%.
+- Docker Compose validation succeeded; API, PostgreSQL 15, and webhook retry worker were running.
+- API health check returned healthy with database connected.
+- Five-minute payment benchmark: 30,000 requests, 99.98 requests/second, zero errors, P95 latency 81.9 ms.
+- Added architecture and routing-algorithm documentation and committed benchmark reports.
+- The benchmark does not establish that every performance target or all 15 failure scenarios have passed.
