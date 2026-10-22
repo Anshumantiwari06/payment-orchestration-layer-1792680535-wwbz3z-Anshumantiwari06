@@ -1,5 +1,6 @@
 """Five-factor gateway scoring with circuit-breaker-aware weighted selection."""
 import random
+
 from app.gateways.base import PaymentGateway
 from app.gateways.circuit_breaker import CircuitBreaker, CircuitState
 

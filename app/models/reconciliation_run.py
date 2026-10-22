@@ -1,9 +1,12 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import DateTime, Integer, String, JSON, func
+
+from sqlalchemy import JSON, DateTime, Integer, String, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
+
 from app.db.base import Base
+
 
 class ReconciliationRun(Base):
     __tablename__ = "reconciliation_runs"

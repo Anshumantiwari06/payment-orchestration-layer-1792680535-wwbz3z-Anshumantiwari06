@@ -4,8 +4,6 @@ from uuid import uuid4
 
 import pytest
 
-from app.gateways.schemas import GatewayOutcome
-from app.models.webhook_event import WebhookEvent
 from app.services.webhook_retry_service import (
     apply_webhook_event,
     process_failed_webhook,

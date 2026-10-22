@@ -6,12 +6,11 @@ from uuid import uuid4
 import pytest
 
 from app.gateways.schemas import GatewayOutcome
-from app.models.transaction import Transaction
+from app.services.idempotency_service import IdempotencyConflictError
 from app.services.transaction_service import (
     _get_existing_response,
     authorize_transaction,
 )
-from app.services.idempotency_service import IdempotencyConflictError
 from app.state_machine.states import PaymentState
 
 

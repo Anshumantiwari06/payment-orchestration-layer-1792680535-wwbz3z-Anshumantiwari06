@@ -1,5 +1,6 @@
 import pytest
-from app.state_machine.engine import transition, InvalidTransitionError
+
+from app.state_machine.engine import InvalidTransitionError, transition
 from app.state_machine.states import PaymentState
 from app.state_machine.transitions import ALLOWED_TRANSITIONS
 

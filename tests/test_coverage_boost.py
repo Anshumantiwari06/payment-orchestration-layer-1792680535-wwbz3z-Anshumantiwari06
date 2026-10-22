@@ -7,16 +7,10 @@ from uuid import uuid4
 import pytest
 
 from app.gateways.circuit_breaker import CircuitBreaker, CircuitState
-from app.gateways.schemas import GatewayOutcome
-from app.models.idempotency_record import IdempotencyRecord
-from app.models.transaction import Transaction
-from app.models.webhook_event import WebhookEvent
-from app.schemas.transaction import TransactionCreateRequest
 from app.services import transaction_service as ts
 from app.services import webhook_retry_service as ws
 from app.services.idempotency_service import IdempotencyConflictError
 from app.state_machine.states import PaymentState
-
 
 # ---------------------------------------------------------
 # Circuit breaker
@@ -157,7 +151,7 @@ def test_capture_webhook_defaults_to_remaining_amount(monkeypatch):
 
     ws.apply_webhook_event(db, event, transaction)
 
-    assert transaction.captured_amount == Decimal("100")
+    assert transaction.captured_amount == Decimal(100)
     assert event.status == "PROCESSED"
     assert db.add.call_count >= 1
 
@@ -182,7 +176,7 @@ def test_partial_capture_webhook(monkeypatch):
 
     ws.apply_webhook_event(db, event, transaction)
 
-    assert transaction.captured_amount == Decimal("40")
+    assert transaction.captured_amount == Decimal(40)
     assert event.status == "PROCESSED"
 
 
@@ -197,7 +191,7 @@ def test_refund_webhook_defaults_to_refundable_balance(monkeypatch):
 
     ws.apply_webhook_event(db, event, transaction)
 
-    assert transaction.refunded_amount == Decimal("80")
+    assert transaction.refunded_amount == Decimal(80)
     assert event.status == "PROCESSED"
 
 
@@ -331,7 +325,7 @@ def test_create_transaction_rolls_back_when_commit_fails():
     request = SimpleNamespace(
         merchant_id="merchant-1",
         merchant_order_id="order-1",
-        amount=Decimal("25"),
+        amount=Decimal(25),
         currency="INR",
     )
 

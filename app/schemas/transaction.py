@@ -19,7 +19,7 @@ class TransactionCreateRequest(BaseModel):
 
     merchant_id: str = Field(min_length=1, max_length=100)
     merchant_order_id: str = Field(min_length=1, max_length=100)
-    amount: Decimal = Field(gt=Decimal("0"), max_digits=15, decimal_places=2)
+    amount: Decimal = Field(gt=Decimal(0), max_digits=15, decimal_places=2)
     currency: str = Field(default="INR", min_length=3, max_length=3)
 
     @field_validator("currency")

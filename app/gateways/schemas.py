@@ -1,5 +1,7 @@
 from enum import StrEnum
+
 from pydantic import BaseModel
+
 
 class GatewayOutcome(StrEnum):
     AUTHORISED = "AUTHORISED"

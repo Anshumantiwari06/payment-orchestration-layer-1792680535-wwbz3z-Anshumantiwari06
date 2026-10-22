@@ -1,5 +1,6 @@
 from enum import StrEnum
 
+
 class PaymentState(StrEnum):
     CREATED = "CREATED"
     ROUTE_SELECTED = "ROUTE_SELECTED"

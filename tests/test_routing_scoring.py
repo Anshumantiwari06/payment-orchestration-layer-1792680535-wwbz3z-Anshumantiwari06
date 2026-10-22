@@ -1,5 +1,10 @@
-from app.gateways.adapters import RazorpayAdapter, StripeAdapter, PayUAdapter, UPIAdapter
-from app.gateways.router import GatewayRouter, FACTOR_WEIGHTS
+from app.gateways.adapters import (
+    PayUAdapter,
+    RazorpayAdapter,
+    StripeAdapter,
+    UPIAdapter,
+)
+from app.gateways.router import FACTOR_WEIGHTS, GatewayRouter
 
 
 def test_factor_weights_sum_to_one():

@@ -1,40 +1,44 @@
-import hashlib, hmac, json, os
+import hashlib
+import hmac
+import os
+from datetime import UTC, datetime
 from decimal import Decimal
 from uuid import UUID
-from fastapi import FastAPI, Depends, HTTPException, Header, Request, Query
-from sqlalchemy import text, select
-from datetime import datetime, timezone
-from sqlalchemy.exc import SQLAlchemyError, IntegrityError
+
+from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request
+from sqlalchemy import select, text
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
+
 from app.db.session import get_db
+from app.gateways.adapters import (
+    PayUAdapter,
+    RazorpayAdapter,
+    StripeAdapter,
+    UPIAdapter,
+)
+from app.gateways.orchestrator import PaymentOrchestrator
+from app.gateways.router import GatewayRouter
+from app.gateways.schemas import GatewayOutcome
+from app.models.reconciliation_anomaly import ReconciliationAnomaly
+from app.models.reconciliation_run import ReconciliationRun
+from app.models.transaction import Transaction
+from app.models.transaction_state_log import TransactionStateLog
+from app.models.webhook_event import WebhookEvent
+from app.schemas.operations import AmountRequest, WebhookRequest
 from app.schemas.transaction import (
     TransactionCreateRequest,
     TransactionStateChangeRequest,
 )
-from app.schemas.operations import AmountRequest, WebhookRequest
-from app.services.transaction_service import (
-    create_transaction,
-    change_transaction_state,
-    authorize_transaction,
-)
 from app.services.idempotency_service import IdempotencyConflictError
-from app.models.transaction import Transaction
-from app.models.transaction_state_log import TransactionStateLog
-from app.models.webhook_event import WebhookEvent
-from app.models.reconciliation_anomaly import ReconciliationAnomaly
-from app.models.reconciliation_run import ReconciliationRun
-from app.services.webhook_retry_service import apply_webhook_event
-from app.gateways.adapters import (
-    RazorpayAdapter,
-    StripeAdapter,
-    PayUAdapter,
-    UPIAdapter,
+from app.services.transaction_service import (
+    authorize_transaction,
+    change_transaction_state,
+    create_transaction,
 )
-from app.gateways.router import GatewayRouter
-from app.gateways.orchestrator import PaymentOrchestrator
-from app.gateways.schemas import GatewayOutcome
+from app.services.webhook_retry_service import apply_webhook_event
+from app.state_machine.engine import InvalidTransitionError, transition_transaction
 from app.state_machine.states import PaymentState
-from app.state_machine.engine import transition_transaction, InvalidTransitionError
 
 app = FastAPI(
     title="Payment Orchestration Layer",
@@ -528,7 +532,7 @@ async def receive_webhook(
         status="RECEIVED",
     )
     event.attempt_count = 1
-    event.last_attempt_at = datetime.now(timezone.utc)
+    event.last_attempt_at = datetime.now(UTC)
     db.add(event)
     try:
         db.commit()
@@ -564,7 +568,7 @@ async def receive_webhook(
                 saved.status = "FAILED"
                 saved.error_message = str(e)[:1000]
                 saved.attempt_count = (saved.attempt_count or 0) + 1
-                saved.last_attempt_at = datetime.now(timezone.utc)
+                saved.last_attempt_at = datetime.now(UTC)
                 db.commit()
             raise HTTPException(
                 409,
@@ -606,7 +610,7 @@ def retry_webhook_event(event_id: str, db: Session = Depends(get_db)):
             detail=f"Only FAILED/REJECTED events can be retried (current status: {event.status})",
         )
     event.attempt_count = (event.attempt_count or 0) + 1
-    event.last_attempt_at = datetime.now(timezone.utc)
+    event.last_attempt_at = datetime.now(UTC)
     event.status = "RECEIVED"
     event.error_message = None
     db.commit()
@@ -909,7 +913,7 @@ def trigger_reconciliation(db: Session = Depends(get_db)):
         "automatic_refunds_triggered": False,
         "note": "Mock gateway status only; verify with a real provider before financial action",
     }
-    run.completed_at = datetime.now(timezone.utc)
+    run.completed_at = datetime.now(UTC)
     db.commit()
     return {
         "run_id": str(run.id),

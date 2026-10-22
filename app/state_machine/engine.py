@@ -1,6 +1,7 @@
+from app.models.transaction_state_log import TransactionStateLog
 from app.state_machine.states import PaymentState
 from app.state_machine.transitions import ALLOWED_TRANSITIONS
-from app.models.transaction_state_log import TransactionStateLog
+
 
 class InvalidTransitionError(Exception):
     """Raised when a payment state transition is not allowed."""

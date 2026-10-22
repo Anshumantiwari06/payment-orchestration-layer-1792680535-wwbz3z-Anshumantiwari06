@@ -1,11 +1,13 @@
 """Idempotent application and bounded retry for persisted webhook events."""
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from decimal import Decimal
 from uuid import UUID
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-from app.models.webhook_event import WebhookEvent
+
 from app.models.transaction import Transaction
+from app.models.webhook_event import WebhookEvent
 from app.state_machine.engine import transition_transaction
 from app.state_machine.states import PaymentState
 from app.state_machine.transitions import ALLOWED_TRANSITIONS
@@ -71,7 +73,7 @@ def process_failed_webhook(db: Session, event: WebhookEvent, max_attempts: int =
     if event.status not in {"FAILED", "REJECTED"} or (event.attempt_count or 0) >= max_attempts:
         return False
     event.attempt_count = (event.attempt_count or 0) + 1
-    event.last_attempt_at = datetime.now(timezone.utc)
+    event.last_attempt_at = datetime.now(UTC)
     try:
         if not event.transaction_id:
             event.status = "IGNORED"
@@ -93,7 +95,7 @@ def process_failed_webhook(db: Session, event: WebhookEvent, max_attempts: int =
         if saved:
             saved.status = "FAILED"
             saved.error_message = str(exc)[:1000]
-            saved.last_attempt_at = datetime.now(timezone.utc)
+            saved.last_attempt_at = datetime.now(UTC)
             db.commit()
         return False
 

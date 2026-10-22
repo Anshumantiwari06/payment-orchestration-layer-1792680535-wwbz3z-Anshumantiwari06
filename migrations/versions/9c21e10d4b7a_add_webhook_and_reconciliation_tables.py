@@ -1,7 +1,8 @@
 """Add webhook deduplication and reconciliation anomaly tables."""
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 from sqlalchemy.dialects import postgresql
+
 revision = "9c21e10d4b7a"
 down_revision = "36435a4dfc99"
 branch_labels = None

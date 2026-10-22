@@ -4,8 +4,8 @@ from uuid import uuid4
 
 from fastapi.testclient import TestClient
 
-from app.main import app
 from app.db.session import get_db
+from app.main import app
 from app.services.idempotency_service import calculate_request_hash
 
 

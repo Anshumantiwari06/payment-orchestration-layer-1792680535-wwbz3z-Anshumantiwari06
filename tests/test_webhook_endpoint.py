@@ -7,9 +7,8 @@ from unittest.mock import Mock, patch
 
 from fastapi.testclient import TestClient
 
-from app.main import app
 from app.db.session import get_db
-
+from app.main import app
 
 SECRET = "test-webhook-secret"
 

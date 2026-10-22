@@ -6,7 +6,6 @@ from app.gateways.orchestrator import PaymentOrchestrator
 from app.gateways.router import GatewayRouter
 from app.gateways.schemas import GatewayOutcome
 
-
 primary = MockGateway(
     gateway_name="mock_primary",
     outcome=GatewayOutcome.DECLINED,

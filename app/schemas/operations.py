@@ -1,5 +1,7 @@
 from decimal import Decimal
+
 from pydantic import BaseModel, Field
+
 
 class AmountRequest(BaseModel):
     amount: Decimal | None = Field(default=None, gt=0, max_digits=15, decimal_places=2)

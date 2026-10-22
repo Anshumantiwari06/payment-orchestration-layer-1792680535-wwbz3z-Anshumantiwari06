@@ -4,7 +4,7 @@ from decimal import Decimal
 
 import pytest
 from sqlalchemy import Numeric
-from app.models.idempotency_record import IdempotencyRecord
+
 from app.db.base import Base
 from app.models.transaction import Transaction
 from app.models.transaction_state_log import TransactionStateLog

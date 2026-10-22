@@ -1,12 +1,12 @@
 
+import argparse
 import asyncio
 import json
 import math
 import os
 import time
 import uuid
-import argparse
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import httpx
 
@@ -48,7 +48,7 @@ async def main():
     scheduled_requests = 0
 
     semaphore = asyncio.Semaphore(args.concurrency)
-    started_at_utc = datetime.now(timezone.utc).isoformat()
+    started_at_utc = datetime.now(UTC).isoformat()
 
     start = time.perf_counter()
     schedule_end = start + args.duration

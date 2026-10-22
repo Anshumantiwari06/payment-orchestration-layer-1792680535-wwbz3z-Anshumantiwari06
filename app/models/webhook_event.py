@@ -1,9 +1,12 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import DateTime, String, Text, func, UniqueConstraint, Integer
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+
+from sqlalchemy import DateTime, Integer, String, Text, UniqueConstraint, func
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
+
 from app.db.base import Base
+
 
 class WebhookEvent(Base):
     __tablename__ = "processed_webhook_events"

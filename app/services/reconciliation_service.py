@@ -7,7 +7,6 @@ from sqlalchemy.orm import Session
 from app.gateways.base import PaymentGateway
 from app.gateways.schemas import GatewayOutcome
 from app.models.transaction import Transaction
-from app.models.transaction_state_log import TransactionStateLog
 from app.state_machine.engine import transition_transaction
 from app.state_machine.states import PaymentState
 

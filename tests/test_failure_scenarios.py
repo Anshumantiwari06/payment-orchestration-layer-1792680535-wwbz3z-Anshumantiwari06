@@ -1,5 +1,7 @@
 from decimal import Decimal
+
 import pytest
+
 from app.gateways.adapters import RazorpayAdapter
 from app.gateways.schemas import GatewayOutcome
 
